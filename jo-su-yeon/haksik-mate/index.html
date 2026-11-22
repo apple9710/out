@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#edf5ff"><title>학식메이트 · 식사 모임</title><link rel="icon" href="icons/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"><script defer src="app.js"></script></head>
+<body><main class="shell">
+<header><a class="brand" href="./"><img class="logo" src="icons/mark.svg" width="40" height="40" alt="">학식메이트</a><span class="campus">건국대학교 <b>GLOCAL</b></span></header>
+<section class="hero glass"><div class="hero-copy"><p class="date" id="date"></p><h1>오늘 학식,<br>누구랑 먹을까요?</h1><button class="primary" id="create">＋ 모임 만들기</button></div><div class="art" aria-hidden="true"><img class="lunch-tray" src="icons/lunch.svg" width="320" height="220" alt=""></div></section>
+<div class="layout"><section><div class="section-head"><h2>식사 모임 <span id="count"></span></h2><small>식사 시간순</small></div><div class="filters" aria-label="모집 상태"><button data-filter="all" aria-pressed="true">전체</button><button data-filter="open" aria-pressed="false">모집 중</button><button data-filter="mine" aria-pressed="false">내 모임</button></div><div id="list"></div></section>
+<aside class="glass agenda"><div class="section-head"><h2>내 식사 일정</h2><img src="icons/calendar.svg" width="22" height="22" alt=""></div><div id="schedule"></div></aside></div>
+<footer>학식메이트 데모 · 작성과 참여 내역은 이 브라우저에 저장돼요.</footer></main>
+<dialog id="dialog"><div class="dialog-head"><h2 id="heading"></h2><button class="close" aria-label="닫기">×</button></div><div id="content"></div></dialog><div id="toast" role="status"></div></body></html>
