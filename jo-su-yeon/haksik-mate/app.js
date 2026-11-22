@@ -8,6 +8,18 @@ const timeFormat = new Intl.DateTimeFormat('ko-KR', {timeZone:'Asia/Seoul', hour
 let filter = 'all';
 let selected = null;
 let toastTimer;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+function revealList() {
+  if (reducedMotion.matches) return;
+  const rows = $('#list').children;
+  for (let i = 0; i < Math.min(rows.length, 6); i++) {
+    rows[i].animate(
+      [{ opacity: 0.55, translate: '0 7px' }, { opacity: 1, translate: '0 0' }],
+      { duration: 190, delay: i * 18, easing: 'ease-out', fill: 'backwards' }
+    );
+  }
+}
 function koreaDate(time) {
   return new Date(time + 9 * 3600000).toISOString().slice(0, 10);
 }
@@ -58,9 +70,19 @@ function modal(title, html) {
   if (!dialog.open) dialog.showModal();
 }
 function notice(message) {
-  $('#toast').textContent = message;
+  const toast = $('#toast');
+  toast.textContent = message;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $('#toast').textContent = '', 3000);
+  toast.getAnimations().forEach(animation => animation.cancel());
+  if (!reducedMotion.matches) {
+    toast.animate([
+      { opacity: 0, translate: '0 6px' },
+      { opacity: 1, translate: '0 0', offset: 0.07 },
+      { opacity: 1, translate: '0 0', offset: 0.94 },
+      { opacity: 0, translate: '0 3px' }
+    ], 3000);
+  }
+  toastTimer = setTimeout(() => toast.textContent = '', 3000);
 }
 const nickname = '<label>닉네임<input name="nickname" maxlength="20" required autocomplete="off" placeholder="모임에서 사용할 이름"></label>';
 function createForm() {
@@ -86,7 +108,8 @@ function commit(form, fields, mealId) {
     if (!Number.isFinite(at) || at <= Date.now()) throw Error('앞으로 만날 날짜와 시간을 선택해 주세요.');
     if (!fields.place.trim() || !fields.intro.trim()) throw Error('장소와 소개를 입력해 주세요.');
     if (!Number.isInteger(capacity) || capacity < 2 || capacity > 30) throw Error('정원은 2~30명으로 입력해 주세요.');
-    meals.push({id:crypto.randomUUID(), place:fields.place.trim(), intro:fields.intro.trim(), capacity, at, icon:0, members:[member]});
+    mealId = crypto.randomUUID();
+    meals.push({id:mealId, place:fields.place.trim(), intro:fields.intro.trim(), capacity, at, icon:0, members:[member]});
   } else {
     const meal = meals.find(m => m.id === mealId);
     if (!meal || !isOpen(meal) || isMine(meal)) {
@@ -96,6 +119,7 @@ function commit(form, fields, mealId) {
     meal.members.push(member);
   }
   localStorage.setItem(dataKey, JSON.stringify(meals));
+  return mealId;
 }
 $('#create').onclick = createForm;
 $('.close').onclick = () => dialog.close();
@@ -104,10 +128,11 @@ document.addEventListener('click', event => {
   const target = event.target.closest('button');
   if (!target) return;
   if (target.dataset.id) detail(target.dataset.id);
-  if (target.dataset.filter) {
+  if (target.dataset.filter && target.dataset.filter !== filter) {
     filter = target.dataset.filter;
     document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === target)));
     render();
+    revealList();
   }
 });
 dialog.addEventListener('submit', async event => {
@@ -119,10 +144,10 @@ dialog.addEventListener('submit', async event => {
   submit.disabled = true;
   try {
     const write = () => commit(form, fields, mealId);
-    if (navigator.locks) await navigator.locks.request(dataKey, write);
-    else write();
+    const savedId = navigator.locks ? await navigator.locks.request(dataKey, write) : write();
     dialog.close();
     render();
+    document.querySelectorAll('[data-id="' + CSS.escape(savedId) + '"]').forEach(item => item.classList.add('just-saved'));
     notice(form.id === 'new-form' ? '식사 모임을 만들었어요.' : '참여했어요. 내 식사 일정을 확인해 보세요.');
   } catch (error) {
     const box = dialog.querySelector('.error');
@@ -132,4 +157,5 @@ dialog.addEventListener('submit', async event => {
 });
 window.addEventListener('storage', event => { if (event.key === dataKey) { render(); if (dialog.open && selected) detail(selected); } });
 render();
+revealList();
 setInterval(render, 60000);

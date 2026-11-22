@@ -82,3 +82,43 @@ textarea { resize: vertical; }
   dialog { inset: 0; margin: auto; width: min(460px,94vw); border-radius: 22px; padding: 0 24px 24px; }
   #toast { bottom: 22px; }
 }
+
+@keyframes welcome-in {
+  from { opacity: .65; translate: 0 6px; }
+}
+@keyframes meal-confirmed {
+  from { background-color: #cce8d8; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero { animation: welcome-in 260ms ease-out; }
+  button {
+    transition: scale 120ms ease-out, background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  }
+  button:active:not(:disabled) { scale: .975; }
+  .just-saved { animation: meal-confirmed 840ms ease-out; }
+  input, textarea { transition: border-color 140ms ease; }
+  input:focus, textarea:focus { border-color: var(--green); }
+
+  @supports (transition-behavior: allow-discrete) {
+    dialog {
+      --sheet-offset: 36px;
+      opacity: 0;
+      translate: 0 var(--sheet-offset);
+      transition: translate 220ms cubic-bezier(.2,.75,.2,1), opacity 160ms ease,
+                  display 220ms allow-discrete, overlay 220ms allow-discrete;
+    }
+    dialog[open] { opacity: 1; translate: 0 0; }
+    dialog::backdrop {
+      opacity: 0;
+      transition: opacity 180ms ease, display 220ms allow-discrete, overlay 220ms allow-discrete;
+    }
+    dialog[open]::backdrop { opacity: 1; }
+    @starting-style {
+      dialog[open] { opacity: 0; translate: 0 var(--sheet-offset); }
+      dialog[open]::backdrop { opacity: 0; }
+    }
+    @media (min-width: 760px) {
+      dialog { --sheet-offset: 10px; }
+    }
+  }
+}
